@@ -102,8 +102,23 @@ const form = ref({
   confirmPassword: ''
 })
 
+const validatePassword = (rule, value, callback) => {
+  if (value) {
+    if (value.length < 6) {
+      callback(new Error('密码长度不能少于6位'))
+    } else if (!/[a-zA-Z]/.test(value) || !/\d/.test(value)) {
+      callback(new Error('密码必须同时包含字母和数字'))
+    } else {
+      callback()
+    }
+  } else {
+    callback()
+  }
+}
+
 const rules = {
   email: [{ type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }],
+  password: [{ validator: validatePassword, trigger: 'blur' }],
   confirmPassword: [
     {
       validator: (rule, value, callback) => {
