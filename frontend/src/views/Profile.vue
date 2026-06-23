@@ -17,17 +17,17 @@
 
         <div class="info-list">
           <div class="info-item">
-            <el-icon color="#4f46e5"><User /></el-icon>
+            <el-icon color="var(--primary)"><User /></el-icon>
             <span class="info-label">用户名</span>
             <span class="info-value">{{ userStore.userInfo?.username }}</span>
           </div>
           <div class="info-item">
-            <el-icon color="#10b981"><Iphone /></el-icon>
+            <el-icon color="var(--success)"><Iphone /></el-icon>
             <span class="info-label">手机号</span>
             <span class="info-value">{{ form.phone || '未填写' }}</span>
           </div>
           <div class="info-item">
-            <el-icon color="#f59e0b"><Message /></el-icon>
+            <el-icon color="var(--warning)"><Message /></el-icon>
             <span class="info-label">邮箱</span>
             <span class="info-value">{{ form.email || '未填写' }}</span>
           </div>
@@ -124,8 +124,8 @@ const userInitial = computed(() => {
 })
 
 const avatarColor = computed(() => {
-  const colors = { admin: '#4f46e5', manager: '#f59e0b', user: '#10b981' }
-  return colors[userStore.role] || '#6366f1'
+  const colors = { admin: 'var(--primary)', manager: 'var(--warning)', user: 'var(--success)' }
+  return colors[userStore.role] || 'var(--primary)'
 })
 
 const roleLabel = computed(() => {
@@ -227,7 +227,7 @@ onMounted(async () => {
 .profile-name {
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 
 .info-list {
@@ -244,14 +244,14 @@ onMounted(async () => {
 
 .info-label {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   width: 48px;
   flex-shrink: 0;
 }
 
 .info-value {
   font-size: 13px;
-  color: #374151;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 

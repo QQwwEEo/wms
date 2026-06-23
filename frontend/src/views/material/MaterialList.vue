@@ -27,7 +27,7 @@
       <el-table-column prop="unit" label="单位" width="70" />
       <el-table-column label="库存数量" width="100">
         <template #default="{ row }">
-          <span :style="{ color: row.quantity <= row.minStock ? '#ef4444' : '#10b981', fontWeight: '600' }">
+          <span :style="{ color: row.quantity <= row.minStock ? 'var(--danger)' : 'var(--success)', fontWeight: '600' }">
             {{ row.quantity }}
           </span>
         </template>

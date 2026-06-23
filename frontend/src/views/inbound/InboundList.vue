@@ -24,7 +24,7 @@
       </el-table-column>
       <el-table-column label="总金额(元)" width="110">
         <template #default="{ row }">
-          <span style="color:#10b981;font-weight:600">{{ row.totalAmount ? '¥' + row.totalAmount : '-' }}</span>
+          <span style="color:var(--success);font-weight:600">{{ row.totalAmount ? '¥' + row.totalAmount : '-' }}</span>
         </template>
       </el-table-column>
       <el-table-column prop="operatorName" label="操作员" width="100" />

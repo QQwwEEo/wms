@@ -264,8 +264,8 @@ const userInitial = computed(() => {
 })
 
 const avatarColor = computed(() => {
-  const colors = { admin: '#4f46e5', manager: '#f59e0b', user: '#10b981' }
-  return colors[userStore.role] || '#6366f1'
+  const colors = { admin: 'var(--primary)', manager: 'var(--warning)', user: 'var(--success)' }
+  return colors[userStore.role] || 'var(--primary)'
 })
 
 const roleLabel = computed(() => {
