@@ -46,6 +46,40 @@
         <div class="chart-title">近7日出入库趋势</div>
         <div ref="lineChartRef" class="chart-container"></div>
       </div>
+      <div class="chart-card calendar-card">
+        <div class="calendar-header">
+          <div class="calendar-month">{{ currentYear }}年{{ currentMonth + 1 }}月</div>
+          <div class="calendar-nav">
+            <button class="nav-btn" @click="prevMonth" id="btn-calendar-prev">
+              <el-icon size="12"><ArrowLeft /></el-icon>
+            </button>
+            <button class="nav-btn" @click="nextMonth" id="btn-calendar-next">
+              <el-icon size="12"><ArrowRight /></el-icon>
+            </button>
+          </div>
+        </div>
+        <div class="calendar-weekdays">
+          <div v-for="w in ['日', '一', '二', '三', '四', '五', '六']" :key="w" class="weekday">{{ w }}</div>
+        </div>
+        <div class="calendar-days">
+          <div
+            v-for="(day, index) in calendarDays"
+            :key="index"
+            :class="[
+              'day-cell',
+              {
+                'not-current': !day.isCurrentMonth,
+                'is-today': day.isToday,
+                'is-selected': day.isSelected
+              }
+            ]"
+            @click="selectDate(day)"
+          >
+            <span class="day-num">{{ day.dayNum }}</span>
+            <span v-if="day.hasActivity" class="activity-dot"></span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 快捷操作区 -->
@@ -86,6 +120,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { dashboardApi, materialApi, inboundApi, outboundApi } from '@/api'
 import * as echarts from 'echarts'
@@ -101,6 +136,113 @@ const lineChartRef = ref(null)
 let pieChartInstance = null
 let lineChartInstance = null
 let resizeObserver = null
+
+// 日历组件相关逻辑与状态
+const currentYear = ref(new Date().getFullYear())
+const currentMonth = ref(new Date().getMonth()) // 0-11
+const selectedDateStr = ref(new Date().toISOString().substring(0, 10))
+
+const inboundDates = ref(new Set())
+const outboundDates = ref(new Set())
+
+const calendarDays = computed(() => {
+  const year = currentYear.value
+  const month = currentMonth.value
+  
+  const firstDay = new Date(year, month, 1)
+  const startDayOfWeek = firstDay.getDay() // 0: Sun, 1: Mon...
+  
+  const totalDays = new Date(year, month + 1, 0).getDate()
+  const prevTotalDays = new Date(year, month, 0).getDate()
+  
+  const days = []
+  
+  // 1. 上月余留天数填充
+  for (let i = startDayOfWeek - 1; i >= 0; i--) {
+    const d = new Date(year, month - 1, prevTotalDays - i)
+    const dateStr = formatDate(d)
+    days.push({
+      date: d,
+      dayNum: prevTotalDays - i,
+      isCurrentMonth: false,
+      isToday: isSameDay(d, new Date()),
+      isSelected: selectedDateStr.value === dateStr,
+      hasActivity: inboundDates.value.has(dateStr) || outboundDates.value.has(dateStr)
+    })
+  }
+  
+  // 2. 本月天数
+  for (let i = 1; i <= totalDays; i++) {
+    const d = new Date(year, month, i)
+    const dateStr = formatDate(d)
+    days.push({
+      date: d,
+      dayNum: i,
+      isCurrentMonth: true,
+      isToday: isSameDay(d, new Date()),
+      isSelected: selectedDateStr.value === dateStr,
+      hasActivity: inboundDates.value.has(dateStr) || outboundDates.value.has(dateStr)
+    })
+  }
+  
+  // 3. 下月天数填充，补足网格 (6行 x 7列 = 42格子，或者5行)
+  const remaining = 42 - days.length
+  const finalPadding = remaining <= 7 ? remaining : (remaining % 7)
+  const totalSlots = days.length + finalPadding
+  const targetTotal = totalSlots <= 35 ? 35 : 42
+  const paddingCount = targetTotal - days.length
+  
+  for (let i = 1; i <= paddingCount; i++) {
+    const d = new Date(year, month + 1, i)
+    const dateStr = formatDate(d)
+    days.push({
+      date: d,
+      dayNum: i,
+      isCurrentMonth: false,
+      isToday: isSameDay(d, new Date()),
+      isSelected: selectedDateStr.value === dateStr,
+      hasActivity: inboundDates.value.has(dateStr) || outboundDates.value.has(dateStr)
+    })
+  }
+  
+  return days
+})
+
+function formatDate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function isSameDay(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getDate() === d2.getDate()
+}
+
+function prevMonth() {
+  if (currentMonth.value === 0) {
+    currentMonth.value = 11
+    currentYear.value -= 1
+  } else {
+    currentMonth.value -= 1
+  }
+}
+
+function nextMonth() {
+  if (currentMonth.value === 11) {
+    currentMonth.value = 0
+    currentYear.value += 1
+  } else {
+    currentMonth.value += 1
+  }
+}
+
+function selectDate(day) {
+  selectedDateStr.value = formatDate(day.date)
+  ElMessage.success(`您选择的日期: ${selectedDateStr.value}`)
+}
 
 const currentDate = computed(() => {
   const now = new Date()
@@ -211,7 +353,7 @@ const initPieChart = (materials) => {
       left: 'left',
       textStyle: { color: '#64748b' }
     },
-    color: ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
+    color: ['#2563eb', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
     series: [
       {
         name: '物资类型',
@@ -378,6 +520,22 @@ onMounted(async () => {
 
     initPieChart(materialsRes.data || [])
     initLineChart(inboundsRes.data?.records || [], outboundsRes.data?.records || [])
+
+    // 填充有出入库业务的日期集合，以显示小圆点
+    const inList = inboundsRes.data?.records || []
+    inList.forEach(item => {
+      const timeStr = item.inboundTime || item.createTime
+      if (timeStr) {
+        inboundDates.value.add(timeStr.substring(0, 10))
+      }
+    })
+    const outList = outboundsRes.data?.records || []
+    outList.forEach(item => {
+      const timeStr = item.outboundTime || item.createTime
+      if (timeStr) {
+        outboundDates.value.add(timeStr.substring(0, 10))
+      }
+    })
   } catch (err) {
     console.error('Failed to load chart data', err)
   }
@@ -524,7 +682,7 @@ onUnmounted(() => {
 /* 图表展示区 */
 .charts-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1.1fr 2fr 1.1fr;
   gap: 16px;
   margin-bottom: 28px;
 }
@@ -533,11 +691,12 @@ onUnmounted(() => {
   background: var(--bg-card);
   border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 320px;
+  min-width: 0;
 }
 
 .chart-title {
@@ -551,6 +710,117 @@ onUnmounted(() => {
   width: 100%;
   flex: 1;
   min-height: 0;
+}
+
+/* 极简日历组件样式 */
+.calendar-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.calendar-month {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.nav-btn:hover {
+  background: var(--sidebar-item-hover-bg);
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  flex: 1;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  position: relative;
+  transition: var(--transition);
+}
+
+.day-cell:hover {
+  background: var(--sidebar-item-hover-bg);
+}
+
+.day-cell.not-current {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.day-cell.is-today {
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.day-cell.is-selected {
+  background: var(--primary);
+  color: #ffffff !important;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.day-cell.is-selected .activity-dot {
+  background: #ffffff;
+}
+
+.activity-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
 }
 
 /* 快捷操作 */
@@ -639,9 +909,22 @@ onUnmounted(() => {
   color: var(--primary-light);
 }
 
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1.2fr 2fr;
+  }
+  .calendar-card {
+    grid-column: span 2;
+    height: auto;
+  }
+}
+
 @media (max-width: 992px) {
   .charts-grid {
     grid-template-columns: 1fr;
+  }
+  .calendar-card {
+    grid-column: span 1;
   }
 }
 

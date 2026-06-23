@@ -283,6 +283,7 @@ watch(route, () => {
 .sidebar {
   width: var(--sidebar-width, 240px);
   background: var(--sidebar-bg);
+  border-right: var(--sidebar-border);
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -314,7 +315,7 @@ watch(route, () => {
   align-items: center;
   gap: 12px;
   padding: 20px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: var(--sidebar-border);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -328,13 +329,13 @@ watch(route, () => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.2);
 }
 
 .logo-text {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
@@ -350,7 +351,7 @@ watch(route, () => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.35);
+  color: var(--text-muted);
   padding: 12px 8px 6px;
   white-space: nowrap;
 }
@@ -361,7 +362,7 @@ watch(route, () => {
   gap: 10px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: rgba(255,255,255,0.65);
+  color: var(--sidebar-text);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -371,19 +372,19 @@ watch(route, () => {
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.08);
-  color: #fff;
+  background: var(--sidebar-item-hover-bg);
+  color: var(--sidebar-text-hover);
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+  background: var(--sidebar-item-active-bg);
+  color: var(--sidebar-item-active-text);
+  font-weight: 600;
 }
 
 .sidebar-footer {
   padding: 12px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: var(--sidebar-border);
 }
 
 .user-mini {
@@ -398,7 +399,7 @@ watch(route, () => {
 }
 
 .user-mini:hover {
-  background: rgba(255,255,255,0.08);
+  background: var(--sidebar-item-hover-bg);
 }
 
 .user-mini-info {
@@ -411,7 +412,7 @@ watch(route, () => {
 .user-mini-name {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -449,14 +450,14 @@ watch(route, () => {
 .toggle-btn {
   width: 36px;
   height: 36px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: var(--text-secondary);
   transition: all 0.2s;
 }
 
