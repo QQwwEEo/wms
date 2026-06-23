@@ -344,41 +344,56 @@ const initPieChart = (materials) => {
   }))
 
   const option = {
+    title: {
+      text: '物资种类',
+      subtext: `${materials.length} 种`,
+      left: 'center',
+      top: '29%',
+      textStyle: {
+        fontSize: 11,
+        color: '#94a3b8',
+        fontWeight: 'normal',
+        align: 'center'
+      },
+      subtextStyle: {
+        fontSize: 18,
+        color: 'var(--text-primary)',
+        fontWeight: '700',
+        align: 'center'
+      }
+    },
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c} 种 ({d}%)'
     },
     legend: {
       orient: 'horizontal',
-      bottom: 0,
+      bottom: 4,
       left: 'center',
-      itemWidth: 10,
-      itemHeight: 10,
-      textStyle: { color: '#64748b', fontSize: 11 }
+      itemWidth: 8,
+      itemHeight: 8,
+      itemGap: 10,
+      textStyle: { color: '#64748b', fontSize: 10 }
     },
-    color: ['#2563eb', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
+    color: ['#3b82f6', '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'],
     series: [
       {
         name: '物资类型',
         type: 'pie',
-        radius: ['35%', '60%'],
-        center: ['50%', '40%'],
+        radius: ['56%', '72%'],
+        center: ['50%', '38%'],
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 6,
+          borderRadius: 4,
           borderColor: 'var(--bg-card)',
           borderWidth: 2
         },
         label: {
-          show: false,
-          position: 'center'
+          show: false
         },
         emphasis: {
           label: {
-            show: true,
-            fontSize: 13,
-            fontWeight: 'bold',
-            formatter: '{b}\n{d}%'
+            show: false
           }
         },
         labelLine: {
@@ -777,12 +792,13 @@ onUnmounted(() => {
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
   gap: 4px;
   flex: 1;
+  min-height: 0;
 }
 
 .day-cell {
-  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
