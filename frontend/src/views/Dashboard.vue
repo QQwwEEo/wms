@@ -438,13 +438,15 @@ const initLineChart = (inbounds, outbounds) => {
       axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } }
     },
     legend: {
+      top: 0,
       data: ['入库数量', '出库数量'],
       textStyle: { color: '#64748b' }
     },
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '3%',
+      top: '15%',
+      bottom: '5%',
       containLabel: true
     },
     xAxis: [
@@ -570,15 +572,16 @@ onUnmounted(() => {
 }
 
 .welcome-banner {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
-  color: #fff;
-  box-shadow: 0 8px 24px rgba(79,70,229,0.3);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .welcome-content {
@@ -597,7 +600,7 @@ onUnmounted(() => {
   font-size: 22px;
   font-weight: 700;
   color: #fff;
-  background: rgba(255,255,255,0.25);
+  background: var(--primary);
   flex-shrink: 0;
 }
 
@@ -609,7 +612,7 @@ onUnmounted(() => {
 
 .welcome-content p {
   font-size: 13px;
-  opacity: 0.8;
+  color: var(--text-secondary);
 }
 
 /* 统计卡片 */
