@@ -349,20 +349,24 @@ const initPieChart = (materials) => {
       formatter: '{b}: {c} 种 ({d}%)'
     },
     legend: {
-      orient: 'vertical',
-      left: 'left',
-      textStyle: { color: '#64748b' }
+      orient: 'horizontal',
+      bottom: 0,
+      left: 'center',
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { color: '#64748b', fontSize: 11 }
     },
     color: ['#2563eb', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
     series: [
       {
         name: '物资类型',
         type: 'pie',
-        radius: ['40%', '70%'],
+        radius: ['35%', '60%'],
+        center: ['50%', '40%'],
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 8,
-          borderColor: '#fff',
+          borderRadius: 6,
+          borderColor: 'var(--bg-card)',
           borderWidth: 2
         },
         label: {
@@ -372,8 +376,9 @@ const initPieChart = (materials) => {
         emphasis: {
           label: {
             show: true,
-            fontSize: 14,
-            fontWeight: 'bold'
+            fontSize: 13,
+            fontWeight: 'bold',
+            formatter: '{b}\n{d}%'
           }
         },
         labelLine: {
