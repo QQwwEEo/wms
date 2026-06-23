@@ -1,0 +1,23 @@
+# Maven
+backend/target/
+*.class
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Logs
+*.log
+backend/backend_err.log
+backend/backend_out.log
+backend/sql_err.log
+backend/sql_out.log
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
