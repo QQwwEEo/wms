@@ -248,6 +248,8 @@ function handleThemeChange(theme) {
   currentTheme.value = theme
   localStorage.setItem('wms-theme', theme)
   document.documentElement.setAttribute('data-theme', theme)
+  // 派发自定义事件，通知页面图表等组件更新主题配色
+  window.dispatchEvent(new CustomEvent('wms-theme-change', { detail: theme }))
 }
 
 onMounted(() => {

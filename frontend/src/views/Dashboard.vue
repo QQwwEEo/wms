@@ -137,6 +137,30 @@ let pieChartInstance = null
 let lineChartInstance = null
 let resizeObserver = null
 
+// 缓存图表数据，在切换主题时能够直接进行重绘
+let cachedMaterials = []
+let cachedInbounds = []
+let cachedOutbounds = []
+
+// 动态读取 CSS 变量，确保 Canvas 绘图在暗色、明色以及各种主题色下边框、文字、图例渲染一致
+const getThemeColors = () => {
+  const rootStyle = getComputedStyle(document.documentElement)
+  const bgCard = rootStyle.getPropertyValue('--bg-card').trim() || '#ffffff'
+  const textPrimary = rootStyle.getPropertyValue('--text-primary').trim() || '#18181b'
+  const textSecondary = rootStyle.getPropertyValue('--text-secondary').trim() || '#71717a'
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+  return { bgCard, textPrimary, textSecondary, isDark }
+}
+
+const handleThemeUpdate = () => {
+  if (cachedMaterials.length > 0) {
+    initPieChart(cachedMaterials)
+  }
+  if (cachedInbounds.length > 0 && cachedOutbounds.length > 0) {
+    initLineChart(cachedInbounds, cachedOutbounds)
+  }
+}
+
 // 日历组件相关逻辑与状态
 const currentYear = ref(new Date().getFullYear())
 const currentMonth = ref(new Date().getMonth()) // 0-11
@@ -331,6 +355,7 @@ const initPieChart = (materials) => {
   }
 
   pieChartInstance = echarts.init(pieChartRef.value)
+  cachedMaterials = materials
 
   const typeCounts = {}
   materials.forEach(m => {
@@ -343,50 +368,63 @@ const initPieChart = (materials) => {
     value: typeCounts[name]
   }))
 
+  const colors = getThemeColors()
+
   const option = {
     title: {
       text: '物资种类',
       subtext: `${materials.length} 种`,
       left: 'center',
-      top: '29%',
+      top: '37%', // 完美的垂直中心对齐，与圆环的 45% 中心匹配
       textStyle: {
-        fontSize: 11,
-        color: '#94a3b8',
-        fontWeight: 'normal',
+        fontSize: 12,
+        color: colors.textSecondary,
+        fontWeight: '500',
         align: 'center'
       },
       subtextStyle: {
-        fontSize: 18,
-        color: 'var(--text-primary)',
+        fontSize: 24,
+        color: colors.textPrimary,
         fontWeight: '700',
         align: 'center'
       }
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{b}: {c} 种 ({d}%)'
+      backgroundColor: colors.bgCard,
+      borderColor: colors.isDark ? '#374151' : '#e2e8f0',
+      borderWidth: 1,
+      textStyle: {
+        color: colors.textPrimary,
+        fontSize: 13
+      },
+      extraCssText: 'box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border-radius: 8px;'
     },
     legend: {
+      type: 'scroll', // 滚动图例，防止分类过多时折行甚至重叠，保持界面开阔清爽
       orient: 'horizontal',
-      bottom: 4,
+      bottom: 8,
       left: 'center',
-      itemWidth: 8,
-      itemHeight: 8,
-      itemGap: 10,
-      textStyle: { color: '#64748b', fontSize: 10 }
+      itemWidth: 10,
+      itemHeight: 10,
+      itemGap: 16,
+      textStyle: { color: colors.textSecondary, fontSize: 11 },
+      pageIconColor: colors.textPrimary,
+      pageIconInactiveColor: colors.isDark ? '#4b5563' : '#cbd5e1',
+      pageTextStyle: { color: colors.textSecondary }
     },
     color: ['#3b82f6', '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'],
     series: [
       {
         name: '物资类型',
         type: 'pie',
-        radius: ['56%', '72%'],
-        center: ['50%', '38%'],
+        radius: ['58%', '74%'], // 适度调大占比，让图形更为舒展
+        center: ['50%', '45%'], // 垂直居中优化
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 4,
-          borderColor: 'var(--bg-card)',
-          borderWidth: 2
+          borderRadius: 6,
+          borderColor: colors.bgCard, // 动态使用卡片背景色作为边框，完美融入主题背景，消除黑色描边
+          borderWidth: 3
         },
         label: {
           show: false
@@ -394,6 +432,11 @@ const initPieChart = (materials) => {
         emphasis: {
           label: {
             show: false
+          },
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: colors.isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'
           }
         },
         labelLine: {
@@ -426,6 +469,8 @@ const initLineChart = (inbounds, outbounds) => {
   }
 
   lineChartInstance = echarts.init(lineChartRef.value)
+  cachedInbounds = inbounds
+  cachedOutbounds = outbounds
 
   const dates = getLast7Days()
   const xLabels = dates.map(d => d.substring(5))
@@ -452,15 +497,25 @@ const initLineChart = (inbounds, outbounds) => {
   const inboundData = dates.map(d => inboundMap[d] || 0)
   const outboundData = dates.map(d => outboundMap[d] || 0)
 
+  const colors = getThemeColors()
+
   const option = {
     tooltip: {
       trigger: 'axis',
+      backgroundColor: colors.bgCard,
+      borderColor: colors.isDark ? '#374151' : '#e2e8f0',
+      borderWidth: 1,
+      textStyle: {
+        color: colors.textPrimary,
+        fontSize: 13
+      },
+      extraCssText: 'box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border-radius: 8px;',
       axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } }
     },
     legend: {
       top: 0,
       data: ['入库数量', '出库数量'],
-      textStyle: { color: '#64748b' }
+      textStyle: { color: colors.textSecondary }
     },
     grid: {
       left: '3%',
@@ -474,15 +529,15 @@ const initLineChart = (inbounds, outbounds) => {
         type: 'category',
         boundaryGap: false,
         data: xLabels,
-        axisLabel: { color: '#64748b' },
-        axisLine: { lineStyle: { color: '#cbd5e1' } }
+        axisLabel: { color: colors.textSecondary },
+        axisLine: { lineStyle: { color: colors.isDark ? '#1f2937' : '#e2e8f0' } }
       }
     ],
     yAxis: [
       {
         type: 'value',
-        axisLabel: { color: '#64748b' },
-        splitLine: { lineStyle: { color: '#f1f5f9' } }
+        axisLabel: { color: colors.textSecondary },
+        splitLine: { lineStyle: { color: colors.isDark ? '#1f2937' : '#f1f5f9' } }
       }
     ],
     series: [
@@ -493,7 +548,7 @@ const initLineChart = (inbounds, outbounds) => {
         lineStyle: { width: 3, color: '#10b981' },
         showSymbol: false,
         areaStyle: {
-          opacity: 0.1,
+          opacity: 0.08,
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: '#10b981' },
             { offset: 1, color: 'rgba(16,185,129,0)' }
@@ -509,7 +564,7 @@ const initLineChart = (inbounds, outbounds) => {
         lineStyle: { width: 3, color: '#ef4444' },
         showSymbol: false,
         areaStyle: {
-          opacity: 0.1,
+          opacity: 0.08,
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: '#ef4444' },
             { offset: 1, color: 'rgba(239,68,68,0)' }
@@ -568,9 +623,14 @@ onMounted(async () => {
   })
   if (pieChartRef.value) resizeObserver.observe(pieChartRef.value)
   if (lineChartRef.value) resizeObserver.observe(lineChartRef.value)
+
+  // 监听主题切换事件
+  window.addEventListener('wms-theme-change', handleThemeUpdate)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('wms-theme-change', handleThemeUpdate)
+
   if (resizeObserver) {
     resizeObserver.disconnect()
     resizeObserver = null
