@@ -30,6 +30,9 @@ request.interceptors.response.use(
       userStore.token = newToken
     }
     const res = response.data
+    if (response.request.responseType === 'blob' || res instanceof Blob) {
+      return res
+    }
     if (res.code !== 200) {
       ElMessage.error(res.message || '请求失败')
       if (res.code === 401) {

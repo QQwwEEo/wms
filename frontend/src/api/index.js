@@ -49,7 +49,10 @@ export const materialApi = {
   list: () => request.get('/material/list'),
   add: (data) => request.post('/material', data),
   update: (data) => request.put('/material', data),
-  delete: (id) => request.delete(`/material/${id}`)
+  delete: (id) => request.delete(`/material/${id}`),
+  importExcel: (formData) => request.post('/material/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
 }
 
 // 入库管理
